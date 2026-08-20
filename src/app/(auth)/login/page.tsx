@@ -38,19 +38,11 @@ function AppleIcon({ className }: { className?: string }) {
 
 export default function LoginPage() {
   const router = useRouter();
-  const [email, setEmail] = useState("alice@example.com");
-  const [password, setPassword] = useState("password123");
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
   const [errors, setErrors] = useState<{ email?: string; password?: string; form?: string }>({});
-
-  const handleDemoSignIn = async () => {
-    setEmail("alice@example.com");
-    setPassword("password123");
-    setLoading(true);
-    await new Promise((r) => setTimeout(r, 600));
-    router.push("/dashboard");
-  };
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -83,21 +75,6 @@ export default function LoginPage() {
             Sign up
           </Link>
         </p>
-      </div>
-
-      {/* ── 1-Click Demo Pre-Fill Banner ─────────────────────────────────── */}
-      <div className="bg-[#E6F4EF]/80 border border-[#00674F]/20 rounded-2xl p-3.5 mb-5 flex items-center justify-between text-xs">
-        <div className="flex items-center gap-2">
-          <Sparkles className="h-4 w-4 text-[#00674F]" />
-          <span className="text-[#1B1C15] font-medium">Demo: <strong>alice@example.com</strong></span>
-        </div>
-        <button
-          type="button"
-          onClick={handleDemoSignIn}
-          className="px-2.5 py-1 rounded-full bg-[#00674F] hover:bg-[#00523E] text-white font-semibold text-[0.7rem] transition-colors cursor-pointer"
-        >
-          1-Click Login →
-        </button>
       </div>
 
       {/* Form error alert */}
