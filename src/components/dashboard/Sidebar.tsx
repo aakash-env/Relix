@@ -89,8 +89,18 @@ export function Sidebar() {
   const [collapsed, setCollapsed] = useState(false);
   const [darkMode, setDarkMode] = useState(false);
   const [cmdOpen, setCmdOpen] = useState(false);
+  const [userName, setUserName] = useState("Alice Chen");
+  const [userEmail, setUserEmail] = useState("alice@example.com");
 
   useEffect(() => {
+    try {
+      const storedEmail = localStorage.getItem("relix_user_email");
+      const storedName = localStorage.getItem("relix_user_name");
+      if (storedEmail) setUserEmail(storedEmail);
+      if (storedName) setUserName(storedName);
+      else if (storedEmail) setUserName(storedEmail.split("@")[0]);
+    } catch {}
+
     const handler = (e: KeyboardEvent) => {
       if ((e.metaKey || e.ctrlKey) && e.key === "k") {
         e.preventDefault();
@@ -100,6 +110,14 @@ export function Sidebar() {
     window.addEventListener("keydown", handler);
     return () => window.removeEventListener("keydown", handler);
   }, []);
+
+  const handleSignOut = async () => {
+    try {
+      await fetch("/api/auth/logout", { method: "POST" });
+      localStorage.removeItem("relix_logged_in");
+    } catch {}
+    router.push("/login");
+  };
 
   return (
     <>
@@ -201,20 +219,20 @@ export function Sidebar() {
 
         {/* User menu */}
         <button
-          onClick={() => router.push("/login")}
-          title="Sign out"
-          className="w-full flex items-center gap-2.5 px-3 py-2.5 rounded-lg hover:bg-white/5 transition-colors cursor-pointer text-left"
+          onClick={handleSignOut}
+          title="Click to sign out"
+          className="w-full flex items-center gap-2.5 px-3 py-2.5 rounded-lg hover:bg-white/10 transition-colors cursor-pointer text-left group"
         >
-          <div className="w-7 h-7 rounded-full bg-[#6366f1] flex items-center justify-center text-xs font-bold text-white shrink-0">
-            A
+          <div className="w-7 h-7 rounded-full bg-[#00674F] flex items-center justify-center text-xs font-bold text-white shrink-0 uppercase shadow-xs">
+            {userName ? userName.charAt(0) : "U"}
           </div>
           {!collapsed && (
             <div className="flex-1 min-w-0">
-              <p className="text-xs font-medium text-white truncate">Alice Chen</p>
-              <p className="text-[0.65rem] text-white/30 truncate">alice@example.com</p>
+              <p className="text-xs font-medium text-white truncate group-hover:text-[#C5F74F] transition-colors">{userName}</p>
+              <p className="text-[0.65rem] text-white/40 truncate">{userEmail}</p>
             </div>
           )}
-          {!collapsed && <LogOut className="h-4 w-4 text-white/30 hover:text-white/60 shrink-0" />}
+          {!collapsed && <LogOut className="h-4 w-4 text-white/30 group-hover:text-white shrink-0 transition-colors" />}
         </button>
       </div>
     </aside>

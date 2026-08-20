@@ -3,7 +3,7 @@
 import React, { useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { Eye, EyeOff, Mail, Lock, ArrowRight, Loader2 } from "lucide-react";
+import { Eye, EyeOff, ArrowRight, Loader2 } from "lucide-react";
 
 function GoogleIcon({ className }: { className?: string }) {
   return (
@@ -42,45 +42,55 @@ export default function LoginPage() {
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
-  const [errors, setErrors] = useState<{ email?: string; password?: string; form?: string }>({});
+  const [errorMsg, setErrorMsg] = useState<string | null>(null);
 
-  const handleLoginSuccess = (userEmail: string) => {
-    try {
-      localStorage.setItem("relix_user_email", userEmail || "developer@relix.dev");
-      localStorage.setItem("relix_logged_in", "true");
-    } catch {}
-    router.push("/dashboard");
-  };
-
-  const handleSocialLogin = (provider: string) => {
+  const performLogin = async (userEmail: string, userPassword?: string) => {
+    setErrorMsg(null);
     setLoading(true);
-    handleLoginSuccess(`${provider.toLowerCase()}@relix.dev`);
+
+    try {
+      const res = await fetch("/api/auth/login", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email: userEmail, password: userPassword }),
+      });
+
+      const data = await res.json();
+
+      if (!res.ok) {
+        throw new Error(data?.error || "Invalid credentials.");
+      }
+
+      // Persist in client storage
+      if (data?.user) {
+        localStorage.setItem("relix_user_email", data.user.email);
+        localStorage.setItem("relix_user_name", data.user.name);
+        localStorage.setItem("relix_user_plan", data.user.plan);
+        localStorage.setItem("relix_logged_in", "true");
+      }
+
+      router.push("/dashboard");
+    } catch (err: any) {
+      setErrorMsg(err?.message || "Failed to sign in. Please try again.");
+      setLoading(false);
+    }
   };
 
-  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
+  const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
+    const trimmed = email.trim();
 
-    const trimmedEmail = email.trim();
-    const newErrors: typeof errors = {};
-
-    if (!trimmedEmail) {
-      newErrors.email = "Please enter your email address.";
-    } else if (!trimmedEmail.includes("@") || !trimmedEmail.includes(".")) {
-      newErrors.email = "Please enter a valid email address (e.g. name@company.com).";
-    }
-
-    if (Object.keys(newErrors).length > 0) {
-      setErrors(newErrors);
+    if (!trimmed) {
+      setErrorMsg("Please enter your email address.");
       return;
     }
 
-    setErrors({});
-    setLoading(true);
+    if (!trimmed.includes("@") || !trimmed.includes(".")) {
+      setErrorMsg("Please enter a valid email address (e.g. name@company.com).");
+      return;
+    }
 
-    // Smooth navigation into dashboard
-    setTimeout(() => {
-      handleLoginSuccess(trimmedEmail);
-    }, 450);
+    performLogin(trimmed, password);
   };
 
   return (
@@ -99,9 +109,9 @@ export default function LoginPage() {
       </div>
 
       {/* Form error alert */}
-      {errors.form && (
-        <div role="alert" className="bg-red-50 border border-red-200 rounded-xl px-4 py-2.5 mb-4 text-xs text-red-700">
-          {errors.form}
+      {errorMsg && (
+        <div role="alert" className="bg-red-50 border border-red-200 rounded-xl px-4 py-3 mb-4 text-xs text-red-700 font-medium animate-in fade-in duration-200">
+          {errorMsg}
         </div>
       )}
 
@@ -112,29 +122,22 @@ export default function LoginPage() {
           <label className="block text-xs font-semibold text-[#1B1C15] mb-1.5" htmlFor="login-email">
             Email address
           </label>
-          <div className="relative">
-            <input
-              id="login-email"
-              type="email"
-              autoFocus
-              autoComplete="email"
-              placeholder="you@company.com"
-              value={email}
-              onChange={(e) => {
-                setEmail(e.target.value);
-                if (errors.email) setErrors((prev) => ({ ...prev, email: undefined }));
-              }}
-              className={`w-full h-11 px-3.5 rounded-xl border bg-[#FFFDF5] text-sm text-[#1B1C15] placeholder-[#828579] focus:outline-none transition-all ${
-                errors.email
-                  ? "border-red-400 focus:border-red-500 ring-1 ring-red-400"
-                  : "border-[#EAE3D2] focus:border-[#00674F] focus:ring-1 focus:ring-[#00674F]"
-              }`}
-            />
-          </div>
-          {errors.email && <p className="text-[0.7rem] text-red-600 mt-1 font-medium">{errors.email}</p>}
+          <input
+            id="login-email"
+            type="email"
+            autoFocus
+            autoComplete="email"
+            placeholder="you@company.com"
+            value={email}
+            onChange={(e) => {
+              setEmail(e.target.value);
+              if (errorMsg) setErrorMsg(null);
+            }}
+            className="w-full h-11 px-3.5 rounded-xl border border-[#EAE3D2] bg-[#FFFDF5] text-sm text-[#1B1C15] placeholder-[#828579] focus:outline-none focus:border-[#00674F] focus:ring-1 focus:ring-[#00674F] transition-all"
+          />
         </div>
 
-        {/* Password Input (Optional for rapid frictionless login) */}
+        {/* Password Input */}
         <div>
           <div className="flex items-center justify-between mb-1.5">
             <label className="block text-xs font-semibold text-[#1B1C15]" htmlFor="login-password">
@@ -154,13 +157,16 @@ export default function LoginPage() {
               autoComplete="current-password"
               placeholder="Enter your password"
               value={password}
-              onChange={(e) => setPassword(e.target.value)}
+              onChange={(e) => {
+                setPassword(e.target.value);
+                if (errorMsg) setErrorMsg(null);
+              }}
               className="w-full h-11 px-3.5 pr-10 rounded-xl border border-[#EAE3D2] bg-[#FFFDF5] text-sm text-[#1B1C15] placeholder-[#828579] focus:outline-none focus:border-[#00674F] focus:ring-1 focus:ring-[#00674F] transition-all"
             />
             <button
               type="button"
               onClick={() => setShowPassword(!showPassword)}
-              className="absolute right-3 top-1/2 -translate-y-1/2 text-[#828579] hover:text-[#1B1C15] transition-colors p-1"
+              className="absolute right-3 top-1/2 -translate-y-1/2 text-[#828579] hover:text-[#1B1C15] transition-colors p-1 cursor-pointer"
               aria-label={showPassword ? "Hide password" : "Show password"}
             >
               {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
@@ -189,7 +195,7 @@ export default function LoginPage() {
           {loading ? (
             <>
               <Loader2 className="h-4 w-4 animate-spin text-[#C5F74F]" />
-              <span>Logging in...</span>
+              <span>Signing in...</span>
             </>
           ) : (
             <>
@@ -211,7 +217,7 @@ export default function LoginPage() {
       <div className="grid grid-cols-2 gap-3">
         <button
           type="button"
-          onClick={() => handleSocialLogin("Google")}
+          onClick={() => performLogin("google.user@example.com", "oauth_pass")}
           className="h-11 rounded-xl border border-[#EAE3D2] bg-[#FAF7EE] hover:bg-white hover:border-[#1B1C15] text-xs font-semibold text-[#1B1C15] flex items-center justify-center gap-2 transition-all cursor-pointer shadow-2xs"
         >
           <GoogleIcon className="h-4 w-4" />
@@ -219,7 +225,7 @@ export default function LoginPage() {
         </button>
         <button
           type="button"
-          onClick={() => handleSocialLogin("Apple")}
+          onClick={() => performLogin("apple.user@example.com", "oauth_pass")}
           className="h-11 rounded-xl border border-[#EAE3D2] bg-[#FAF7EE] hover:bg-white hover:border-[#1B1C15] text-xs font-semibold text-[#1B1C15] flex items-center justify-center gap-2 transition-all cursor-pointer shadow-2xs"
         >
           <AppleIcon className="h-4 w-4" />

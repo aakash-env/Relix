@@ -3,7 +3,7 @@
 import React, { useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { Eye, EyeOff, Mail, Lock, User, ArrowRight, Loader2 } from "lucide-react";
+import { Eye, EyeOff, ArrowRight, Loader2 } from "lucide-react";
 
 function GoogleIcon({ className }: { className?: string }) {
   return (
@@ -45,54 +45,61 @@ export default function SignupPage() {
   const [showPassword, setShowPassword] = useState(false);
   const [agreeTerms, setAgreeTerms] = useState(true);
   const [loading, setLoading] = useState(false);
-  const [errors, setErrors] = useState<{ name?: string; email?: string; password?: string; terms?: string }>({});
+  const [errorMsg, setErrorMsg] = useState<string | null>(null);
 
-  const handleSignupSuccess = (userEmail: string, userName?: string) => {
-    try {
-      localStorage.setItem("relix_user_email", userEmail || "developer@relix.dev");
-      if (userName) {
-        localStorage.setItem("relix_user_name", userName);
-      }
-      localStorage.setItem("relix_logged_in", "true");
-    } catch {}
-    router.push("/dashboard");
-  };
-
-  const handleSocialSignup = (provider: string) => {
+  const performRegister = async (userEmail: string, userName: string, userPassword?: string) => {
+    setErrorMsg(null);
     setLoading(true);
-    handleSignupSuccess(`${provider.toLowerCase()}@relix.dev`, `${provider} User`);
+
+    try {
+      const res = await fetch("/api/auth/register", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ name: userName, email: userEmail, password: userPassword }),
+      });
+
+      const data = await res.json();
+
+      if (!res.ok) {
+        throw new Error(data?.error || "Failed to create account.");
+      }
+
+      // Persist in client storage
+      if (data?.user) {
+        localStorage.setItem("relix_user_email", data.user.email);
+        localStorage.setItem("relix_user_name", data.user.name);
+        localStorage.setItem("relix_user_plan", data.user.plan);
+        localStorage.setItem("relix_logged_in", "true");
+      }
+
+      router.push("/dashboard");
+    } catch (err: any) {
+      setErrorMsg(err?.message || "Failed to create account. Please try again.");
+      setLoading(false);
+    }
   };
 
-  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
+  const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
+    const trimmed = email.trim();
 
-    const trimmedEmail = email.trim();
-    const newErrors: typeof errors = {};
-
-    if (!trimmedEmail) {
-      newErrors.email = "Please enter your email address.";
-    } else if (!trimmedEmail.includes("@") || !trimmedEmail.includes(".")) {
-      newErrors.email = "Please enter a valid email address (e.g. name@company.com).";
-    }
-
-    if (!agreeTerms) {
-      newErrors.terms = "You must agree to the Terms & Conditions to proceed.";
-    }
-
-    if (Object.keys(newErrors).length > 0) {
-      setErrors(newErrors);
+    if (!trimmed) {
+      setErrorMsg("Please enter your email address.");
       return;
     }
 
-    setErrors({});
-    setLoading(true);
+    if (!trimmed.includes("@") || !trimmed.includes(".")) {
+      setErrorMsg("Please enter a valid email address.");
+      return;
+    }
 
-    const fullName = `${firstName} ${lastName}`.trim() || trimmedEmail.split("@")[0];
+    if (!agreeTerms) {
+      setErrorMsg("You must agree to the Terms & Conditions to proceed.");
+      return;
+    }
 
-    // Smooth auto-login directly into dashboard
-    setTimeout(() => {
-      handleSignupSuccess(trimmedEmail, fullName);
-    }, 450);
+    const fullName = `${firstName} ${lastName}`.trim() || trimmed.split("@")[0];
+    performRegister(trimmed, fullName, password);
   };
 
   return (
@@ -110,6 +117,13 @@ export default function SignupPage() {
         </p>
       </div>
 
+      {/* Form error alert */}
+      {errorMsg && (
+        <div role="alert" className="bg-red-50 border border-red-200 rounded-xl px-4 py-3 mb-4 text-xs text-red-700 font-medium animate-in fade-in duration-200">
+          {errorMsg}
+        </div>
+      )}
+
       {/* ── Signup Form ─────────────────────────────────────────────────── */}
       <form onSubmit={handleSubmit} noValidate className="space-y-4">
         {/* Name Fields: First Name + Last Name (2 columns) */}
@@ -124,7 +138,10 @@ export default function SignupPage() {
               autoFocus
               placeholder="Fletcher"
               value={firstName}
-              onChange={(e) => setFirstName(e.target.value)}
+              onChange={(e) => {
+                setFirstName(e.target.value);
+                if (errorMsg) setErrorMsg(null);
+              }}
               className="w-full h-11 px-3.5 rounded-xl border border-[#EAE3D2] bg-[#FFFDF5] text-sm text-[#1B1C15] placeholder-[#828579] focus:outline-none focus:border-[#00674F] focus:ring-1 focus:ring-[#00674F] transition-all"
             />
           </div>
@@ -137,7 +154,10 @@ export default function SignupPage() {
               type="text"
               placeholder="Vance"
               value={lastName}
-              onChange={(e) => setLastName(e.target.value)}
+              onChange={(e) => {
+                setLastName(e.target.value);
+                if (errorMsg) setErrorMsg(null);
+              }}
               className="w-full h-11 px-3.5 rounded-xl border border-[#EAE3D2] bg-[#FFFDF5] text-sm text-[#1B1C15] placeholder-[#828579] focus:outline-none focus:border-[#00674F] focus:ring-1 focus:ring-[#00674F] transition-all"
             />
           </div>
@@ -156,15 +176,10 @@ export default function SignupPage() {
             value={email}
             onChange={(e) => {
               setEmail(e.target.value);
-              if (errors.email) setErrors((prev) => ({ ...prev, email: undefined }));
+              if (errorMsg) setErrorMsg(null);
             }}
-            className={`w-full h-11 px-3.5 rounded-xl border bg-[#FFFDF5] text-sm text-[#1B1C15] placeholder-[#828579] focus:outline-none transition-all ${
-              errors.email
-                ? "border-red-400 focus:border-red-500 ring-1 ring-red-400"
-                : "border-[#EAE3D2] focus:border-[#00674F] focus:ring-1 focus:ring-[#00674F]"
-            }`}
+            className="w-full h-11 px-3.5 rounded-xl border border-[#EAE3D2] bg-[#FFFDF5] text-sm text-[#1B1C15] placeholder-[#828579] focus:outline-none focus:border-[#00674F] focus:ring-1 focus:ring-[#00674F] transition-all"
           />
-          {errors.email && <p className="text-[0.7rem] text-red-600 mt-1 font-medium">{errors.email}</p>}
         </div>
 
         {/* Password Input */}
@@ -177,15 +192,18 @@ export default function SignupPage() {
               id="signup-password"
               type={showPassword ? "text" : "password"}
               autoComplete="new-password"
-              placeholder="Create a strong password"
+              placeholder="Create a password"
               value={password}
-              onChange={(e) => setPassword(e.target.value)}
+              onChange={(e) => {
+                setPassword(e.target.value);
+                if (errorMsg) setErrorMsg(null);
+              }}
               className="w-full h-11 px-3.5 pr-10 rounded-xl border border-[#EAE3D2] bg-[#FFFDF5] text-sm text-[#1B1C15] placeholder-[#828579] focus:outline-none focus:border-[#00674F] focus:ring-1 focus:ring-[#00674F] transition-all"
             />
             <button
               type="button"
               onClick={() => setShowPassword(!showPassword)}
-              className="absolute right-3 top-1/2 -translate-y-1/2 text-[#828579] hover:text-[#1B1C15] transition-colors p-1"
+              className="absolute right-3 top-1/2 -translate-y-1/2 text-[#828579] hover:text-[#1B1C15] transition-colors p-1 cursor-pointer"
               aria-label={showPassword ? "Hide password" : "Show password"}
             >
               {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
@@ -199,7 +217,10 @@ export default function SignupPage() {
             <input
               type="checkbox"
               checked={agreeTerms}
-              onChange={(e) => setAgreeTerms(e.target.checked)}
+              onChange={(e) => {
+                setAgreeTerms(e.target.checked);
+                if (errorMsg) setErrorMsg(null);
+              }}
               className="w-4 h-4 rounded border-[#D4CDBC] accent-[#00674F]"
             />
             <span>
@@ -209,7 +230,6 @@ export default function SignupPage() {
               </Link>
             </span>
           </label>
-          {errors.terms && <p className="text-[0.7rem] text-red-600 mt-1 font-medium">{errors.terms}</p>}
         </div>
 
         {/* Primary CTA Submit */}
@@ -221,7 +241,7 @@ export default function SignupPage() {
           {loading ? (
             <>
               <Loader2 className="h-4 w-4 animate-spin text-[#C5F74F]" />
-              <span>Creating account &amp; logging in...</span>
+              <span>Saving account &amp; logging in...</span>
             </>
           ) : (
             <>
@@ -243,7 +263,7 @@ export default function SignupPage() {
       <div className="grid grid-cols-2 gap-3">
         <button
           type="button"
-          onClick={() => handleSocialSignup("Google")}
+          onClick={() => performRegister("google.user@example.com", "Google Developer", "oauth_pass")}
           className="h-11 rounded-xl border border-[#EAE3D2] bg-[#FAF7EE] hover:bg-white hover:border-[#1B1C15] text-xs font-semibold text-[#1B1C15] flex items-center justify-center gap-2 transition-all cursor-pointer shadow-2xs"
         >
           <GoogleIcon className="h-4 w-4" />
@@ -251,7 +271,7 @@ export default function SignupPage() {
         </button>
         <button
           type="button"
-          onClick={() => handleSocialSignup("Apple")}
+          onClick={() => performRegister("apple.user@example.com", "Apple Developer", "oauth_pass")}
           className="h-11 rounded-xl border border-[#EAE3D2] bg-[#FAF7EE] hover:bg-white hover:border-[#1B1C15] text-xs font-semibold text-[#1B1C15] flex items-center justify-center gap-2 transition-all cursor-pointer shadow-2xs"
         >
           <AppleIcon className="h-4 w-4" />
