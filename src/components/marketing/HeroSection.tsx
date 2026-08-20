@@ -130,7 +130,7 @@ export function HeroSection() {
 
   return (
     <section
-      className="relative bg-[#FFFAEB] pt-20 md:pt-28 pb-16 md:pb-24 overflow-hidden"
+      className="relative bg-[#FFFAEB] pt-24 md:pt-36 pb-20 md:pb-28 overflow-hidden"
       aria-label="Hero"
     >
       {/* ── Background Foliage Image & Atmospheric Fades ──────────────────── */}
