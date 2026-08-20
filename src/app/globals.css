@@ -1,0 +1,114 @@
+@import "tailwindcss";
+
+:root {
+  --color-ivory:        #FFFAEB;
+  --color-ivory-light:  #FFFDF5;
+  --color-ivory-warm:   #FFF9E9;
+  --color-ivory-dim:    #FBF8EF;
+  --color-cream:        #F2ECE0;
+  --color-border:       #EAE3D2;
+  --color-border-subtle:#F3EDE0;
+
+  --color-ink-primary:  #1B1C15;
+  --color-ink-secondary:#5E6156;
+  --color-ink-muted:    #828579;
+
+  --color-green-accent: #00674F;
+  --color-green-deep:   #004D3B;
+  --color-green-light:  #E6F4EF;
+  --color-green-tint:   #D0ECE2;
+
+  --shadow-card-sm: 0 2px 8px -2px rgba(27, 28, 21, 0.04), 0 1px 3px 0 rgba(27, 28, 21, 0.02);
+  --shadow-card-md: 0 12px 32px -6px rgba(27, 28, 21, 0.06), 0 2px 8px -1px rgba(27, 28, 21, 0.03);
+  --shadow-card-lg: 0 24px 60px -12px rgba(27, 28, 21, 0.08), 0 6px 16px -2px rgba(27, 28, 21, 0.04);
+}
+
+html {
+  scroll-behavior: smooth;
+  background-color: #FFFAEB;
+}
+
+body {
+  background-color: #FFFAEB;
+  color:            #1B1C15;
+  font-family:      var(--font-sohne), "Sohne", "Söhne", "Plus Jakarta Sans", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  line-height:      1.65;
+  font-size:        1rem;
+  letter-spacing:   -0.011em;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+h1, h2, h3, h4, h5, h6 {
+  font-family: var(--font-meraki), var(--font-fraunces), "Meraki", "Newsreader", "Fraunces", Georgia, serif;
+  font-feature-settings: "ss01", "cv01";
+}
+
+p {
+  font-family:    var(--font-sohne), "Sohne", "Söhne", "Plus Jakarta Sans", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  font-weight:    400;
+  letter-spacing: -0.011em;
+}
+
+.font-meraki {
+  font-family: var(--font-meraki), var(--font-fraunces), "Meraki", "Newsreader", "Fraunces", Georgia, serif;
+  font-feature-settings: "ss01", "cv01";
+}
+
+.font-sohne {
+  font-family:    var(--font-sohne), "Sohne", "Söhne", "Plus Jakarta Sans", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  letter-spacing: -0.011em;
+}
+
+@keyframes float-drift-1 {
+  0%, 100% { transform: translate(0px, 0px) rotate(0deg); }
+  33%      { transform: translate(4px, -10px) rotate(0.4deg); }
+  66%      { transform: translate(-3px, -4px) rotate(-0.3deg); }
+}
+
+@keyframes float-drift-2 {
+  0%, 100% { transform: translate(0px, 0px) rotate(0deg); }
+  33%      { transform: translate(-5px, 8px) rotate(-0.5deg); }
+  66%      { transform: translate(3px, 4px) rotate(0.3deg); }
+}
+
+@keyframes float-drift-3 {
+  0%, 100% { transform: translate(0px, 0px) rotate(0deg); }
+  50%      { transform: translate(6px, -8px) rotate(0.6deg); }
+}
+
+@keyframes ray-glow {
+  0%, 100% { opacity: 0.10; }
+  50%      { opacity: 0.18; }
+}
+
+.animate-drift-1 {
+  animation: float-drift-1 9s ease-in-out infinite;
+}
+
+.animate-drift-2 {
+  animation: float-drift-2 11s ease-in-out infinite 1.5s;
+}
+
+.animate-drift-3 {
+  animation: float-drift-3 13s ease-in-out infinite 3s;
+}
+
+.animate-rays {
+  animation: ray-glow 8s ease-in-out infinite;
+}
+
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+::-webkit-scrollbar-track {
+  background: #FFFAEB;
+}
+::-webkit-scrollbar-thumb {
+  background: #D4CDBC;
+  border-radius: 999px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: #828579;
+}
