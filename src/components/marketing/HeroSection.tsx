@@ -161,17 +161,6 @@ export function HeroSection() {
               "linear-gradient(to top, #FFFAEB 0%, rgba(255, 250, 235, 0.85) 15%, rgba(255, 250, 235, 0.2) 40%, transparent 65%)",
           }}
         />
-
-        {/* Subtle Ray-Burst Hairlines */}
-        <div className="absolute inset-0 flex items-center justify-center opacity-[0.06]">
-          <svg
-            className="w-[1440px] h-[1100px] text-[#1B1C15] animate-rays"
-            viewBox="0 0 1000 1000"
-            fill="none"
-          >
-            <path d={RAY_PATH} stroke="currentColor" strokeWidth="0.75" />
-          </svg>
-        </div>
       </div>
 
       <div className="relative z-10 max-w-[1360px] mx-auto px-6">
