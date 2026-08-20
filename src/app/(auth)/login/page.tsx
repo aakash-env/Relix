@@ -178,7 +178,7 @@ export default function LoginPage() {
       <div className="grid grid-cols-2 gap-3">
         <button
           type="button"
-          onClick={handleDemoSignIn}
+          onClick={() => router.push("/dashboard")}
           className="h-11 rounded-xl border border-[#EAE3D2] bg-[#FAF7EE] hover:bg-white hover:border-[#1B1C15] text-xs font-semibold text-[#1B1C15] flex items-center justify-center gap-2 transition-all cursor-pointer shadow-2xs"
         >
           <GoogleIcon className="h-4 w-4" />
@@ -186,7 +186,7 @@ export default function LoginPage() {
         </button>
         <button
           type="button"
-          onClick={handleDemoSignIn}
+          onClick={() => router.push("/dashboard")}
           className="h-11 rounded-xl border border-[#EAE3D2] bg-[#FAF7EE] hover:bg-white hover:border-[#1B1C15] text-xs font-semibold text-[#1B1C15] flex items-center justify-center gap-2 transition-all cursor-pointer shadow-2xs"
         >
           <AppleIcon className="h-4 w-4" />
