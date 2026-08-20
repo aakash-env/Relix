@@ -25,7 +25,7 @@ const securityFeatures = [
 
 export function SecuritySection() {
   return (
-    <section className="py-20 md:py-28 bg-[#FFFAEB] border-t border-[#EAE3D2]" id="security" aria-labelledby="sec-title">
+    <section className="py-14 md:py-20 bg-[#FFFAEB] border-t border-[#EAE3D2]" id="security" aria-labelledby="sec-title">
       <div className="max-w-[1280px] mx-auto px-6">
         {/* Header */}
         <div className="text-center max-w-[660px] mx-auto mb-12 md:mb-16">

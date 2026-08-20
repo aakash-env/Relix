@@ -101,7 +101,7 @@ export function FeatureStorySection() {
 
   return (
     <div
-      className="pt-20 md:pt-28 pb-24 md:pb-32 space-y-28 md:space-y-36 bg-[#FFFAEB] border-t border-[#EAE3D2]"
+      className="pt-14 md:pt-18 pb-16 md:pb-22 space-y-16 md:space-y-24 bg-[#FFFAEB] border-t border-[#EAE3D2]"
       id="features"
     >
       {/* ── SECTION 1: Interactive Relational Table & DAG Visualizer ─────── */}

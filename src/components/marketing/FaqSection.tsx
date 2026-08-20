@@ -34,7 +34,7 @@ export function FaqSection() {
   };
 
   return (
-    <section className="py-20 md:py-28 bg-[#FFFAEB] border-t border-[#EAE3D2]" id="faq" aria-labelledby="faq-title">
+    <section className="py-14 md:py-20 bg-[#FFFAEB] border-t border-[#EAE3D2]" id="faq" aria-labelledby="faq-title">
       <div className="max-w-[860px] mx-auto px-6">
         {/* Header */}
         <div className="text-center mb-12 md:mb-16">

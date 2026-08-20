@@ -75,7 +75,7 @@ export function SocialProofSection() {
 
   return (
     <section
-      className="py-20 md:py-28 bg-[#FFFAEB] border-t border-[#EAE3D2]"
+      className="py-14 md:py-20 bg-[#FFFAEB] border-t border-[#EAE3D2]"
       id="how-it-works"
       aria-labelledby="explanation-heading"
     >

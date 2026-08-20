@@ -7,7 +7,7 @@ import { marketingAssets } from "@/config/marketing-assets";
 
 export function FinalCtaSection() {
   return (
-    <section className="py-20 md:py-28 bg-[#FFFAEB] border-t border-[#EAE3D2]" aria-label="Call to action">
+    <section className="py-14 md:py-20 bg-[#FFFAEB] border-t border-[#EAE3D2]" aria-label="Call to action">
       <div className="max-w-[1280px] mx-auto px-6">
         {/* Full-width rounded card with Littlebird sunlit window & sky background */}
         <div className="relative rounded-[2rem] md:rounded-[2.5rem] overflow-hidden bg-[#183B6B] text-white p-8 sm:p-12 md:p-16 lg:p-20 shadow-card-lg border border-black/10">

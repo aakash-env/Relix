@@ -23,7 +23,7 @@ function LinkedInIcon({ className }: { className?: string }) {
 export function Footer() {
   return (
     <footer
-      className="relative bg-[#FFFAEB] border-t border-[#EAE3D2] pt-20 pb-64 overflow-hidden"
+      className="relative bg-[#FFFAEB] border-t border-[#EAE3D2] pt-14 pb-52 overflow-hidden"
       aria-label="Site footer"
     >
       <div className="max-w-[1280px] mx-auto px-6 relative z-10">
