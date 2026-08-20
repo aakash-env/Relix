@@ -3,7 +3,7 @@
 import React, { useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { Eye, EyeOff, Mail, Lock, User, ArrowRight } from "lucide-react";
+import { Eye, EyeOff, Mail, Lock, User, ArrowRight, Loader2 } from "lucide-react";
 
 function GoogleIcon({ className }: { className?: string }) {
   return (
@@ -47,30 +47,58 @@ export default function SignupPage() {
   const [loading, setLoading] = useState(false);
   const [errors, setErrors] = useState<{ name?: string; email?: string; password?: string; terms?: string }>({});
 
+  const handleSignupSuccess = (userEmail: string, userName?: string) => {
+    try {
+      localStorage.setItem("relix_user_email", userEmail || "developer@relix.dev");
+      if (userName) {
+        localStorage.setItem("relix_user_name", userName);
+      }
+      localStorage.setItem("relix_logged_in", "true");
+    } catch {}
+    router.push("/dashboard");
+  };
+
+  const handleSocialSignup = (provider: string) => {
+    setLoading(true);
+    handleSignupSuccess(`${provider.toLowerCase()}@relix.dev`, `${provider} User`);
+  };
+
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
 
+    const trimmedEmail = email.trim();
     const newErrors: typeof errors = {};
-    if (!firstName.trim()) newErrors.name = "First name is required.";
-    if (!email.includes("@")) newErrors.email = "Enter a valid email address.";
-    if (password.length < 8) newErrors.password = "Password must be at least 8 characters.";
-    if (!agreeTerms) newErrors.terms = "You must agree to the terms to continue.";
 
-    if (Object.keys(newErrors).length) {
+    if (!trimmedEmail) {
+      newErrors.email = "Please enter your email address.";
+    } else if (!trimmedEmail.includes("@") || !trimmedEmail.includes(".")) {
+      newErrors.email = "Please enter a valid email address (e.g. name@company.com).";
+    }
+
+    if (!agreeTerms) {
+      newErrors.terms = "You must agree to the Terms & Conditions to proceed.";
+    }
+
+    if (Object.keys(newErrors).length > 0) {
       setErrors(newErrors);
       return;
     }
 
     setErrors({});
     setLoading(true);
-    await new Promise((r) => setTimeout(r, 800));
-    router.push("/dashboard");
+
+    const fullName = `${firstName} ${lastName}`.trim() || trimmedEmail.split("@")[0];
+
+    // Smooth auto-login directly into dashboard
+    setTimeout(() => {
+      handleSignupSuccess(trimmedEmail, fullName);
+    }, 450);
   };
 
   return (
     <div className="w-full max-w-[460px] mx-auto font-sohne">
       {/* ── Title & Switch Mode ─────────────────────────────────────────── */}
-      <div className="mb-6">
+      <div className="mb-7">
         <h1 className="font-meraki text-3xl sm:text-4xl font-light text-[#1B1C15] tracking-tight mb-2">
           Create an account
         </h1>
@@ -93,6 +121,7 @@ export default function SignupPage() {
             <input
               id="signup-firstname"
               type="text"
+              autoFocus
               placeholder="Fletcher"
               value={firstName}
               onChange={(e) => setFirstName(e.target.value)}
@@ -113,7 +142,6 @@ export default function SignupPage() {
             />
           </div>
         </div>
-        {errors.name && <p className="text-[0.7rem] text-red-600 -mt-2">{errors.name}</p>}
 
         {/* Email Input */}
         <div>
@@ -123,16 +151,20 @@ export default function SignupPage() {
           <input
             id="signup-email"
             type="email"
-            placeholder="you@example.com"
+            autoComplete="email"
+            placeholder="you@company.com"
             value={email}
-            onChange={(e) => setEmail(e.target.value)}
+            onChange={(e) => {
+              setEmail(e.target.value);
+              if (errors.email) setErrors((prev) => ({ ...prev, email: undefined }));
+            }}
             className={`w-full h-11 px-3.5 rounded-xl border bg-[#FFFDF5] text-sm text-[#1B1C15] placeholder-[#828579] focus:outline-none transition-all ${
               errors.email
                 ? "border-red-400 focus:border-red-500 ring-1 ring-red-400"
                 : "border-[#EAE3D2] focus:border-[#00674F] focus:ring-1 focus:ring-[#00674F]"
             }`}
           />
-          {errors.email && <p className="text-[0.7rem] text-red-600 mt-1">{errors.email}</p>}
+          {errors.email && <p className="text-[0.7rem] text-red-600 mt-1 font-medium">{errors.email}</p>}
         </div>
 
         {/* Password Input */}
@@ -144,14 +176,11 @@ export default function SignupPage() {
             <input
               id="signup-password"
               type={showPassword ? "text" : "password"}
-              placeholder="Enter your password"
+              autoComplete="new-password"
+              placeholder="Create a strong password"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
-              className={`w-full h-11 px-3.5 pr-10 rounded-xl border bg-[#FFFDF5] text-sm text-[#1B1C15] placeholder-[#828579] focus:outline-none transition-all ${
-                errors.password
-                  ? "border-red-400 focus:border-red-500 ring-1 ring-red-400"
-                  : "border-[#EAE3D2] focus:border-[#00674F] focus:ring-1 focus:ring-[#00674F]"
-              }`}
+              className="w-full h-11 px-3.5 pr-10 rounded-xl border border-[#EAE3D2] bg-[#FFFDF5] text-sm text-[#1B1C15] placeholder-[#828579] focus:outline-none focus:border-[#00674F] focus:ring-1 focus:ring-[#00674F] transition-all"
             />
             <button
               type="button"
@@ -162,11 +191,10 @@ export default function SignupPage() {
               {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
             </button>
           </div>
-          {errors.password && <p className="text-[0.7rem] text-red-600 mt-1">{errors.password}</p>}
         </div>
 
         {/* Terms Checkbox */}
-        <div className="pt-1">
+        <div className="pt-0.5">
           <label className="flex items-center gap-2 text-xs text-[#5E6156] cursor-pointer select-none">
             <input
               type="checkbox"
@@ -181,7 +209,7 @@ export default function SignupPage() {
               </Link>
             </span>
           </label>
-          {errors.terms && <p className="text-[0.7rem] text-red-600 mt-1">{errors.terms}</p>}
+          {errors.terms && <p className="text-[0.7rem] text-red-600 mt-1 font-medium">{errors.terms}</p>}
         </div>
 
         {/* Primary CTA Submit */}
@@ -190,8 +218,17 @@ export default function SignupPage() {
           disabled={loading}
           className="w-full h-12 rounded-xl bg-[#1B1C15] hover:bg-[#00674F] text-[#FFFAEB] font-semibold text-sm transition-all duration-200 shadow-2xs flex items-center justify-center gap-2 cursor-pointer disabled:opacity-75"
         >
-          <span>{loading ? "Creating account..." : "Create account"}</span>
-          <ArrowRight className="h-4 w-4" />
+          {loading ? (
+            <>
+              <Loader2 className="h-4 w-4 animate-spin text-[#C5F74F]" />
+              <span>Creating account &amp; logging in...</span>
+            </>
+          ) : (
+            <>
+              <span>Create account</span>
+              <ArrowRight className="h-4 w-4" />
+            </>
+          )}
         </button>
       </form>
 
@@ -206,7 +243,7 @@ export default function SignupPage() {
       <div className="grid grid-cols-2 gap-3">
         <button
           type="button"
-          onClick={() => router.push("/dashboard")}
+          onClick={() => handleSocialSignup("Google")}
           className="h-11 rounded-xl border border-[#EAE3D2] bg-[#FAF7EE] hover:bg-white hover:border-[#1B1C15] text-xs font-semibold text-[#1B1C15] flex items-center justify-center gap-2 transition-all cursor-pointer shadow-2xs"
         >
           <GoogleIcon className="h-4 w-4" />
@@ -214,7 +251,7 @@ export default function SignupPage() {
         </button>
         <button
           type="button"
-          onClick={() => router.push("/dashboard")}
+          onClick={() => handleSocialSignup("Apple")}
           className="h-11 rounded-xl border border-[#EAE3D2] bg-[#FAF7EE] hover:bg-white hover:border-[#1B1C15] text-xs font-semibold text-[#1B1C15] flex items-center justify-center gap-2 transition-all cursor-pointer shadow-2xs"
         >
           <AppleIcon className="h-4 w-4" />
