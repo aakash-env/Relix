@@ -189,7 +189,7 @@ export function HeroSection() {
               Break nothing.
             </span>
           </h1>
-          <p className="text-[20px] text-[#5E6156] max-w-[660px] mx-auto leading-[1.6] font-sohne font-normal">
+          <p className="text-[20px] text-[#5E6156] max-w-[700px] mx-auto leading-[1.6] font-sohne font-normal">
             Connect your PostgreSQL schema. Relix builds the relational dependency graph and
             synthesizes coherent users, organizations, AI conversations, token telemetry,
             and billing records in under 300ms.
