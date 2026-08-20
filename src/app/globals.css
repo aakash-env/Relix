@@ -1,5 +1,46 @@
 @import "tailwindcss";
 
+/* ── Söhne Buch Web Fonts ─────────────────────────────────────────────── */
+@font-face {
+  font-family: 'Söhne Buch';
+  src: url('https://cdn.jsdelivr.net/gh/webfonts-cdn/sohne/sohne-buch.woff2') format('woff2'),
+       url('https://cdn.jsdelivr.net/gh/webfonts-cdn/sohne/sohne-buch.woff') format('woff');
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'Sohne Buch';
+  src: url('https://cdn.jsdelivr.net/gh/webfonts-cdn/sohne/sohne-buch.woff2') format('woff2'),
+       url('https://cdn.jsdelivr.net/gh/webfonts-cdn/sohne/sohne-buch.woff') format('woff');
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'Söhne';
+  src: url('https://cdn.jsdelivr.net/gh/webfonts-cdn/sohne/sohne-kraftig.woff2') format('woff2');
+  font-weight: 500;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'Söhne';
+  src: url('https://cdn.jsdelivr.net/gh/webfonts-cdn/sohne/sohne-halbfett.woff2') format('woff2');
+  font-weight: 700;
+  font-style: normal;
+  font-display: swap;
+}
+
+@theme {
+  --font-sohne: "Söhne Buch", "Sohne Buch", "Söhne", "Sohne", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  --font-meraki: var(--font-meraki), "Newsreader", "Fraunces", Georgia, serif;
+  --font-mono: var(--font-mono), "JetBrains Mono", monospace;
+}
+
 :root {
   --color-ivory:        #FFFAEB;
   --color-ivory-light:  #FFFDF5;
@@ -31,7 +72,7 @@ html {
 body {
   background-color: #FFFAEB;
   color:            #1B1C15;
-  font-family:      "Söhne Buch", "Sohne Buch", "Söhne", "Sohne", var(--font-sohne), "Plus Jakarta Sans", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  font-family:      "Söhne Buch", "Sohne Buch", "Söhne", "Sohne", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
   line-height:      1.65;
   font-size:        1rem;
   letter-spacing:   -0.015em;
@@ -46,7 +87,7 @@ h1, h2, h3, h4, h5, h6 {
 }
 
 p {
-  font-family:    "Söhne Buch", "Sohne Buch", "Söhne", "Sohne", var(--font-sohne), "Plus Jakarta Sans", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  font-family:    "Söhne Buch", "Sohne Buch", "Söhne", "Sohne", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
   font-weight:    400;
   letter-spacing: -0.015em;
 }
@@ -58,7 +99,7 @@ p {
 
 .font-sohne,
 .font-sohne-buch {
-  font-family:    "Söhne Buch", "Sohne Buch", "Söhne", "Sohne", var(--font-sohne), "Plus Jakarta Sans", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  font-family:    "Söhne Buch", "Sohne Buch", "Söhne", "Sohne", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif !important;
   letter-spacing: -0.015em;
   font-weight:    400;
 }
@@ -71,46 +112,36 @@ p {
 
 @keyframes float-drift-2 {
   0%, 100% { transform: translate(0px, 0px) rotate(0deg); }
-  33%      { transform: translate(-5px, 8px) rotate(-0.5deg); }
-  66%      { transform: translate(3px, 4px) rotate(0.3deg); }
+  33%      { transform: translate(-5px, 8px) rotate(-0.4deg); }
+  66%      { transform: translate(4px, -6px) rotate(0.3deg); }
 }
 
 @keyframes float-drift-3 {
   0%, 100% { transform: translate(0px, 0px) rotate(0deg); }
-  50%      { transform: translate(6px, -8px) rotate(0.6deg); }
+  50%      { transform: translate(6px, -8px) rotate(0.5deg); }
 }
 
-@keyframes ray-glow {
-  0%, 100% { opacity: 0.10; }
-  50%      { opacity: 0.18; }
+@keyframes ray-rotate {
+  from { transform: rotate(0deg); }
+  to   { transform: rotate(360deg); }
 }
 
-.animate-drift-1 {
-  animation: float-drift-1 9s ease-in-out infinite;
-}
+.animate-float-1 { animation: float-drift-1 14s ease-in-out infinite; }
+.animate-float-2 { animation: float-drift-2 18s ease-in-out infinite; }
+.animate-float-3 { animation: float-drift-3 12s ease-in-out infinite; }
+.animate-rays    { animation: ray-rotate 180s linear infinite; }
 
-.animate-drift-2 {
-  animation: float-drift-2 11s ease-in-out infinite 1.5s;
-}
-
-.animate-drift-3 {
-  animation: float-drift-3 13s ease-in-out infinite 3s;
-}
-
-.animate-rays {
-  animation: ray-glow 8s ease-in-out infinite;
-}
-
+/* Subtle Custom Scrollbar */
 ::-webkit-scrollbar {
   width: 6px;
   height: 6px;
 }
 ::-webkit-scrollbar-track {
-  background: #FFFAEB;
+  background: transparent;
 }
 ::-webkit-scrollbar-thumb {
   background: #D4CDBC;
-  border-radius: 999px;
+  border-radius: 9999px;
 }
 ::-webkit-scrollbar-thumb:hover {
   background: #828579;
