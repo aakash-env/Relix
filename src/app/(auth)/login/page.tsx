@@ -3,7 +3,7 @@
 import React, { useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { Eye, EyeOff, Mail, Lock, Sparkles, ArrowRight } from "lucide-react";
+import { Eye, EyeOff, Mail, Lock, ArrowRight, Loader2 } from "lucide-react";
 
 function GoogleIcon({ className }: { className?: string }) {
   return (
@@ -44,35 +44,56 @@ export default function LoginPage() {
   const [loading, setLoading] = useState(false);
   const [errors, setErrors] = useState<{ email?: string; password?: string; form?: string }>({});
 
+  const handleLoginSuccess = (userEmail: string) => {
+    try {
+      localStorage.setItem("relix_user_email", userEmail || "developer@relix.dev");
+      localStorage.setItem("relix_logged_in", "true");
+    } catch {}
+    router.push("/dashboard");
+  };
+
+  const handleSocialLogin = (provider: string) => {
+    setLoading(true);
+    handleLoginSuccess(`${provider.toLowerCase()}@relix.dev`);
+  };
+
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
 
+    const trimmedEmail = email.trim();
     const newErrors: typeof errors = {};
-    if (!email.includes("@")) newErrors.email = "Enter a valid email address.";
-    if (password.length < 6) newErrors.password = "Password must be at least 6 characters.";
 
-    if (Object.keys(newErrors).length) {
+    if (!trimmedEmail) {
+      newErrors.email = "Please enter your email address.";
+    } else if (!trimmedEmail.includes("@") || !trimmedEmail.includes(".")) {
+      newErrors.email = "Please enter a valid email address (e.g. name@company.com).";
+    }
+
+    if (Object.keys(newErrors).length > 0) {
       setErrors(newErrors);
       return;
     }
 
     setErrors({});
     setLoading(true);
-    await new Promise((r) => setTimeout(r, 700));
-    router.push("/dashboard");
+
+    // Smooth navigation into dashboard
+    setTimeout(() => {
+      handleLoginSuccess(trimmedEmail);
+    }, 450);
   };
 
   return (
     <div className="w-full max-w-[460px] mx-auto font-sohne">
-      {/* ── Title & Switch Mode ─────────────────────────────────────────── */}
-      <div className="mb-6">
+      {/* ── Header & Mode Switcher ─────────────────────────────────────── */}
+      <div className="mb-7">
         <h1 className="font-meraki text-3xl sm:text-4xl font-light text-[#1B1C15] tracking-tight mb-2">
           Log in to Relix
         </h1>
         <p className="text-xs sm:text-sm text-[#5E6156]">
           Don&apos;t have an account?{" "}
           <Link href="/signup" className="text-[#00674F] hover:underline font-semibold">
-            Sign up
+            Sign up free
           </Link>
         </p>
       </div>
@@ -86,7 +107,7 @@ export default function LoginPage() {
 
       {/* ── Login Form ─────────────────────────────────────────────────── */}
       <form onSubmit={handleSubmit} noValidate className="space-y-4">
-        {/* Email Input */}
+        {/* Email Address Input */}
         <div>
           <label className="block text-xs font-semibold text-[#1B1C15] mb-1.5" htmlFor="login-email">
             Email address
@@ -95,9 +116,14 @@ export default function LoginPage() {
             <input
               id="login-email"
               type="email"
-              placeholder="you@example.com"
+              autoFocus
+              autoComplete="email"
+              placeholder="you@company.com"
               value={email}
-              onChange={(e) => setEmail(e.target.value)}
+              onChange={(e) => {
+                setEmail(e.target.value);
+                if (errors.email) setErrors((prev) => ({ ...prev, email: undefined }));
+              }}
               className={`w-full h-11 px-3.5 rounded-xl border bg-[#FFFDF5] text-sm text-[#1B1C15] placeholder-[#828579] focus:outline-none transition-all ${
                 errors.email
                   ? "border-red-400 focus:border-red-500 ring-1 ring-red-400"
@@ -105,26 +131,31 @@ export default function LoginPage() {
               }`}
             />
           </div>
-          {errors.email && <p className="text-[0.7rem] text-red-600 mt-1">{errors.email}</p>}
+          {errors.email && <p className="text-[0.7rem] text-red-600 mt-1 font-medium">{errors.email}</p>}
         </div>
 
-        {/* Password Input */}
+        {/* Password Input (Optional for rapid frictionless login) */}
         <div>
-          <label className="block text-xs font-semibold text-[#1B1C15] mb-1.5" htmlFor="login-password">
-            Password
-          </label>
+          <div className="flex items-center justify-between mb-1.5">
+            <label className="block text-xs font-semibold text-[#1B1C15]" htmlFor="login-password">
+              Password
+            </label>
+            <Link
+              href="/forgot-password"
+              className="text-xs text-[#00674F] hover:underline font-medium"
+            >
+              Forgot?
+            </Link>
+          </div>
           <div className="relative">
             <input
               id="login-password"
               type={showPassword ? "text" : "password"}
+              autoComplete="current-password"
               placeholder="Enter your password"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
-              className={`w-full h-11 px-3.5 pr-10 rounded-xl border bg-[#FFFDF5] text-sm text-[#1B1C15] placeholder-[#828579] focus:outline-none transition-all ${
-                errors.password
-                  ? "border-red-400 focus:border-red-500 ring-1 ring-red-400"
-                  : "border-[#EAE3D2] focus:border-[#00674F] focus:ring-1 focus:ring-[#00674F]"
-              }`}
+              className="w-full h-11 px-3.5 pr-10 rounded-xl border border-[#EAE3D2] bg-[#FFFDF5] text-sm text-[#1B1C15] placeholder-[#828579] focus:outline-none focus:border-[#00674F] focus:ring-1 focus:ring-[#00674F] transition-all"
             />
             <button
               type="button"
@@ -135,35 +166,37 @@ export default function LoginPage() {
               {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
             </button>
           </div>
-          {errors.password && <p className="text-[0.7rem] text-red-600 mt-1">{errors.password}</p>}
         </div>
 
-        {/* Remember + Forgot */}
-        <div className="flex items-center justify-between pt-1 text-xs">
+        {/* Remember Me */}
+        <div className="pt-0.5 text-xs">
           <label className="flex items-center gap-2 text-[#5E6156] cursor-pointer select-none">
             <input
               type="checkbox"
               defaultChecked
               className="w-4 h-4 rounded border-[#D4CDBC] accent-[#00674F]"
             />
-            <span>Remember me</span>
+            <span>Remember this device</span>
           </label>
-          <Link
-            href="/forgot-password"
-            className="text-[#00674F] hover:underline font-medium"
-          >
-            Forgot password?
-          </Link>
         </div>
 
-        {/* Primary CTA Submit */}
+        {/* Submit Action */}
         <button
           type="submit"
           disabled={loading}
           className="w-full h-12 rounded-xl bg-[#1B1C15] hover:bg-[#00674F] text-[#FFFAEB] font-semibold text-sm transition-all duration-200 shadow-2xs flex items-center justify-center gap-2 cursor-pointer disabled:opacity-75"
         >
-          <span>{loading ? "Signing in..." : "Log in"}</span>
-          <ArrowRight className="h-4 w-4" />
+          {loading ? (
+            <>
+              <Loader2 className="h-4 w-4 animate-spin text-[#C5F74F]" />
+              <span>Logging in...</span>
+            </>
+          ) : (
+            <>
+              <span>Log in to Dashboard</span>
+              <ArrowRight className="h-4 w-4" />
+            </>
+          )}
         </button>
       </form>
 
@@ -178,7 +211,7 @@ export default function LoginPage() {
       <div className="grid grid-cols-2 gap-3">
         <button
           type="button"
-          onClick={() => router.push("/dashboard")}
+          onClick={() => handleSocialLogin("Google")}
           className="h-11 rounded-xl border border-[#EAE3D2] bg-[#FAF7EE] hover:bg-white hover:border-[#1B1C15] text-xs font-semibold text-[#1B1C15] flex items-center justify-center gap-2 transition-all cursor-pointer shadow-2xs"
         >
           <GoogleIcon className="h-4 w-4" />
@@ -186,7 +219,7 @@ export default function LoginPage() {
         </button>
         <button
           type="button"
-          onClick={() => router.push("/dashboard")}
+          onClick={() => handleSocialLogin("Apple")}
           className="h-11 rounded-xl border border-[#EAE3D2] bg-[#FAF7EE] hover:bg-white hover:border-[#1B1C15] text-xs font-semibold text-[#1B1C15] flex items-center justify-center gap-2 transition-all cursor-pointer shadow-2xs"
         >
           <AppleIcon className="h-4 w-4" />
@@ -195,7 +228,7 @@ export default function LoginPage() {
       </div>
 
       {/* Legal Footer Note */}
-      <p className="text-center text-[0.7rem] text-[#828579] mt-6">
+      <p className="text-center text-[0.7rem] text-[#828579] mt-6 leading-relaxed">
         By signing in you agree to our{" "}
         <Link href="/terms" className="underline hover:text-[#1B1C15]">Terms</Link>
         {" "}and{" "}
