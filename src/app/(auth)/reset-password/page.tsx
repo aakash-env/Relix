@@ -2,9 +2,7 @@
 
 import React, { useState } from "react";
 import Link from "next/link";
-import { Eye, EyeOff, Lock, CheckCircle2, ArrowRight } from "lucide-react";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
+import { Eye, EyeOff, Lock, CheckCircle2, ArrowRight, ArrowLeft } from "lucide-react";
 
 export default function ResetPasswordPage() {
   const [showPassword, setShowPassword] = useState(false);
@@ -27,90 +25,107 @@ export default function ResetPasswordPage() {
 
     setError(null);
     setLoading(true);
-    await new Promise((r) => setTimeout(r, 1200));
+    await new Promise((r) => setTimeout(r, 1000));
     setLoading(false);
     setSuccess(true);
   };
 
   if (success) {
     return (
-      <div className="text-center py-4">
-        <div className="w-14 h-14 rounded-full bg-[#d4e5d0] flex items-center justify-center mx-auto mb-4">
-          <CheckCircle2 className="h-7 w-7 text-[#4a7c59]" />
+      <div className="text-center py-6 font-sohne">
+        <div className="w-14 h-14 rounded-full bg-[#E6F4EF] flex items-center justify-center mx-auto mb-4 border border-[#00674F]/20">
+          <CheckCircle2 className="h-7 w-7 text-[#00674F]" />
         </div>
-        <h2 className="text-xl font-semibold text-[#1c1a18] mb-2">Password reset successful</h2>
-        <p className="text-sm text-[#6b6460] mb-6">
-          Your password has been updated. You can now log in with your new credentials.
+        <h2 className="font-meraki text-2xl font-light text-[#1B1C15] mb-2">Password updated</h2>
+        <p className="text-xs sm:text-sm text-[#5E6156] mb-6 max-w-[320px] mx-auto leading-relaxed">
+          Your credentials have been securely updated. You can now log in.
         </p>
-        <Button asChild className="w-full" id="reset-success-login">
-          <Link href="/login">
-            Continue to sign in
-            <ArrowRight className="h-4 w-4" />
-          </Link>
-        </Button>
+        <Link
+          href="/login"
+          className="w-full h-11 rounded-xl bg-[#1B1C15] hover:bg-[#00674F] text-[#FFFAEB] font-semibold text-xs flex items-center justify-center gap-1.5 transition-colors shadow-2xs"
+        >
+          <span>Continue to log in</span>
+          <ArrowRight className="h-3.5 w-3.5" />
+        </Link>
       </div>
     );
   }
 
   return (
-    <>
-      <h1 className="text-2xl font-semibold text-[#1c1a18] mb-1">Set new password</h1>
-      <p className="text-sm text-[#6b6460] mb-7">
-        Please choose a strong password with at least 8 characters.
-      </p>
+    <div className="w-full max-w-[460px] mx-auto font-sohne">
+      <Link
+        href="/login"
+        className="inline-flex items-center gap-1.5 text-xs text-[#5E6156] hover:text-[#1B1C15] mb-6 transition-colors"
+      >
+        <ArrowLeft className="h-3.5 w-3.5" />
+        <span>Back to log in</span>
+      </Link>
+
+      <div className="mb-6">
+        <h1 className="font-meraki text-3xl sm:text-4xl font-light text-[#1B1C15] tracking-tight mb-2">
+          Set new password
+        </h1>
+        <p className="text-xs sm:text-sm text-[#5E6156]">
+          Must be at least 8 characters with a mix of letters and numbers.
+        </p>
+      </div>
 
       {error && (
-        <div role="alert" className="bg-red-50 border border-red-100 rounded-lg px-4 py-3 mb-5 text-sm text-red-700">
+        <div role="alert" className="bg-red-50 border border-red-200 rounded-xl px-4 py-2.5 mb-4 text-xs text-red-700">
           {error}
         </div>
       )}
 
-      <form onSubmit={handleSubmit} noValidate className="flex flex-col gap-4">
-        <Input
-          id="new-password"
-          name="password"
-          type={showPassword ? "text" : "password"}
-          label="New password"
-          placeholder="At least 8 characters"
-          value={password}
-          onChange={(e) => setPassword(e.target.value)}
-          leftIcon={<Lock className="h-4 w-4" />}
-          rightElement={
+      <form onSubmit={handleSubmit} noValidate className="space-y-4">
+        <div>
+          <label className="block text-xs font-semibold text-[#1B1C15] mb-1.5" htmlFor="new-password">
+            New password
+          </label>
+          <div className="relative">
+            <input
+              id="new-password"
+              type={showPassword ? "text" : "password"}
+              placeholder="At least 8 characters"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              required
+              className="w-full h-11 px-3.5 pr-10 rounded-xl border border-[#EAE3D2] bg-[#FFFDF5] text-sm text-[#1B1C15] placeholder-[#828579] focus:outline-none focus:border-[#00674F] focus:ring-1 focus:ring-[#00674F] transition-all"
+            />
             <button
               type="button"
-              onClick={() => setShowPassword((s) => !s)}
+              onClick={() => setShowPassword(!showPassword)}
+              className="absolute right-3 top-1/2 -translate-y-1/2 text-[#828579] hover:text-[#1B1C15] transition-colors p-1"
               aria-label={showPassword ? "Hide password" : "Show password"}
-              className="text-[#6b6460] hover:text-[#1c1a18] transition-colors"
             >
               {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
             </button>
-          }
-          required
-        />
+          </div>
+        </div>
 
-        <Input
-          id="confirm-password"
-          name="confirmPassword"
-          type={showPassword ? "text" : "password"}
-          label="Confirm new password"
-          placeholder="Repeat new password"
-          value={confirmPassword}
-          onChange={(e) => setConfirmPassword(e.target.value)}
-          leftIcon={<Lock className="h-4 w-4" />}
-          required
-        />
+        <div>
+          <label className="block text-xs font-semibold text-[#1B1C15] mb-1.5" htmlFor="confirm-password">
+            Confirm new password
+          </label>
+          <input
+            id="confirm-password"
+            type={showPassword ? "text" : "password"}
+            placeholder="Repeat new password"
+            value={confirmPassword}
+            onChange={(e) => setConfirmPassword(e.target.value)}
+            required
+            className="w-full h-11 px-3.5 rounded-xl border border-[#EAE3D2] bg-[#FFFDF5] text-sm text-[#1B1C15] placeholder-[#828579] focus:outline-none focus:border-[#00674F] focus:ring-1 focus:ring-[#00674F] transition-all"
+          />
+        </div>
 
-        <Button type="submit" className="w-full mt-2" loading={loading} id="reset-password-submit">
-          {loading ? "Updating password…" : "Reset password"}
-        </Button>
+        <button
+          type="submit"
+          disabled={loading}
+          className="w-full h-12 rounded-xl bg-[#1B1C15] hover:bg-[#00674F] text-[#FFFAEB] font-semibold text-sm transition-all duration-200 shadow-2xs flex items-center justify-center gap-2 cursor-pointer disabled:opacity-75"
+        >
+          <span>{loading ? "Updating password..." : "Update password"}</span>
+          <ArrowRight className="h-4 w-4" />
+        </button>
       </form>
-
-      <p className="text-center text-sm text-[#6b6460] mt-6">
-        Remembered your credentials?{" "}
-        <Link href="/login" className="text-[#6366f1] hover:underline font-medium">
-          Sign in
-        </Link>
-      </p>
-    </>
+    </div>
   );
 }
