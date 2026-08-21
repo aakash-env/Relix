@@ -33,18 +33,7 @@ export const metadata: Metadata = {
   },
   description:
     "Generate realistic, relational database seed data from your schema — connected users, organizations, AI conversations, token usage, and billing records in under 300ms.",
-  keywords: [
-    "database seed data",
-    "seed generator",
-    "TypeScript seed script",
-    "Drizzle ORM",
-    "Prisma",
-    "PostgreSQL",
-    "test data",
-    "mock data",
-    "developer tools",
-    "AI SaaS database",
-  ],
+  keywords: "database seed data, seed generator, TypeScript seed script, Drizzle ORM, Prisma, PostgreSQL, test data, mock data, developer tools, AI SaaS database",
   authors: [{ name: "Relix" }],
   creator: "Relix",
   openGraph: {
