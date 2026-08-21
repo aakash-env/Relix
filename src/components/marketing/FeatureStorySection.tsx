@@ -325,25 +325,11 @@ export function FeatureStorySection() {
                 Exact same records every time.
               </span>
             </h2>
-            <p className="text-base md:text-lg text-[#5E6156] leading-relaxed mb-6 font-sohne">
+            <p className="text-base md:text-lg text-[#5E6156] leading-relaxed mb-8 font-sohne">
               Relix skips placeholder gibberish to synthesize authentic LLM model conversations,
               realistic prompt token horizons, and Stripe billing invoices. Powered by Mulberry32 PRNG,
               a single integer seed guarantees identical datasets across your entire team and CI/CD pipelines.
             </p>
-            <div className="flex items-center gap-6 mb-8 font-sohne text-xs text-[#5E6156]">
-              <div className="flex items-center gap-1.5">
-                <CheckCircle2 className="h-4 w-4 text-[#00674F]" />
-                <span>Authentic LLM chats</span>
-              </div>
-              <div className="flex items-center gap-1.5">
-                <CheckCircle2 className="h-4 w-4 text-[#00674F]" />
-                <span>Token telemetry</span>
-              </div>
-              <div className="flex items-center gap-1.5">
-                <CheckCircle2 className="h-4 w-4 text-[#00674F]" />
-                <span>Zero flaky tests</span>
-              </div>
-            </div>
             <Link
               href="/signup"
               className="inline-flex items-center gap-1.5 px-5 py-2.5 rounded-full border border-[#EAE3D2] bg-white text-xs font-semibold text-[#1B1C15] hover:bg-[#FFFDF5] hover:border-[#1B1C15] shadow-2xs transition-all"
