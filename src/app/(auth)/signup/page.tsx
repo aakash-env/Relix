@@ -64,15 +64,14 @@ export default function SignupPage() {
         throw new Error(data?.error || "Failed to create account.");
       }
 
-      // Persist in client storage
+      // Persist name in local storage for login page prefill
       if (data?.user) {
         localStorage.setItem("relix_user_email", data.user.email);
         localStorage.setItem("relix_user_name", data.user.name);
-        localStorage.setItem("relix_user_plan", data.user.plan);
-        localStorage.setItem("relix_logged_in", "true");
       }
 
-      router.push("/dashboard");
+      // Redirect directly to login page with registered confirmation
+      router.push(`/login?registered=true&email=${encodeURIComponent(data?.user?.email || userEmail)}`);
     } catch (err: any) {
       setErrorMsg(err?.message || "Failed to create account. Please try again.");
       setLoading(false);
@@ -90,6 +89,11 @@ export default function SignupPage() {
 
     if (!trimmed.includes("@") || !trimmed.includes(".")) {
       setErrorMsg("Please enter a valid email address.");
+      return;
+    }
+
+    if (!password || password.length < 6) {
+      setErrorMsg("Password must be at least 6 characters long.");
       return;
     }
 
@@ -192,7 +196,7 @@ export default function SignupPage() {
               id="signup-password"
               type={showPassword ? "text" : "password"}
               autoComplete="new-password"
-              placeholder="Create a password"
+              placeholder="Create a password (6+ chars)"
               value={password}
               onChange={(e) => {
                 setPassword(e.target.value);
@@ -241,7 +245,7 @@ export default function SignupPage() {
           {loading ? (
             <>
               <Loader2 className="h-4 w-4 animate-spin text-[#C5F74F]" />
-              <span>Saving account &amp; logging in...</span>
+              <span>Creating account...</span>
             </>
           ) : (
             <>

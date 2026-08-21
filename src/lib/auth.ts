@@ -37,7 +37,7 @@ function loadLocalUsers(): StoredUser[] {
     if (fs.existsSync(LOCAL_STORE_PATH)) {
       const data = fs.readFileSync(LOCAL_STORE_PATH, "utf-8");
       const parsed = JSON.parse(data);
-      if (Array.isArray(parsed)) {
+      if (Array.isArray(parsed) && parsed.length > 0) {
         return parsed;
       }
     }
@@ -81,6 +81,30 @@ export async function findUserByEmail(email: string): Promise<StoredUser | null>
   // 2. Local store fallback
   const localList = loadLocalUsers();
   const found = localList.find((u) => u.email.toLowerCase() === normalized);
+  return found || null;
+}
+
+export async function findUserById(id: string): Promise<StoredUser | null> {
+  // 1. Try PostgreSQL
+  try {
+    const result = await db.select().from(users).where(eq(users.id, id)).limit(1);
+    if (result && result.length > 0) {
+      const u = result[0];
+      return {
+        id: u.id,
+        name: u.name,
+        email: u.email,
+        passwordHash: u.passwordHash ?? undefined,
+        plan: (u.plan as "free" | "pro" | "team") || "free",
+        avatarUrl: u.avatarUrl ?? undefined,
+        createdAt: u.createdAt.toISOString(),
+      };
+    }
+  } catch (e) {}
+
+  // 2. Local store fallback
+  const localList = loadLocalUsers();
+  const found = localList.find((u) => u.id === id);
   return found || null;
 }
 
@@ -136,25 +160,42 @@ export async function authenticateUser(
   password?: string
 ): Promise<StoredUser> {
   const normalized = email.toLowerCase().trim();
-  let user = await findUserByEmail(normalized);
+  const user = await findUserByEmail(normalized);
 
   if (!user) {
-    // Auto-create user for frictionless login
-    user = await createUser({
-      name: normalized.split("@")[0],
-      email: normalized,
-      password: password || "password123",
-      plan: "free",
-    });
-    return user;
+    throw new Error("No account found with this email. Please create an account first.");
   }
 
-  if (password && user.passwordHash) {
+  if (!password) {
+    throw new Error("Password is required to sign in.");
+  }
+
+  if (user.passwordHash) {
     const inputHash = hashPassword(password);
     if (inputHash !== user.passwordHash) {
-      throw new Error("Invalid email address or password.");
+      throw new Error("Incorrect password. Please check your credentials.");
     }
   }
 
   return user;
+}
+
+export async function updateUserProfile(
+  id: string,
+  updates: Partial<Pick<StoredUser, "name" | "avatarUrl" | "plan">>
+): Promise<StoredUser | null> {
+  // 1. Try DB
+  try {
+    await db.update(users).set({ ...updates, updatedAt: new Date() }).where(eq(users.id, id));
+  } catch (e) {}
+
+  // 2. Local store
+  const localList = loadLocalUsers();
+  const index = localList.findIndex((u) => u.id === id);
+  if (index >= 0) {
+    localList[index] = { ...localList[index], ...updates };
+    saveLocalUsers(localList);
+    return localList[index];
+  }
+  return null;
 }

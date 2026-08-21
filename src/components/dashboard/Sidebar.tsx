@@ -3,23 +3,27 @@
 import React, { useState, useEffect } from "react";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
+import { RelixLogo } from "@/components/marketing/RelixLogo";
 import { CommandPalette } from "./CommandPalette";
 import {
   LayoutDashboard,
   FolderOpen,
-  Settings,
-  ChevronLeft,
-  ChevronRight,
-  BookOpen,
-  Zap,
-  LogOut,
+  LayoutTemplate,
+  Activity,
   User,
+  Shield,
   Key,
   CreditCard,
-  Shield,
+  BookOpen,
   Sun,
   Moon,
+  Search,
+  ChevronDown,
+  Building2,
+  Check,
+  Sparkles,
   Command,
+  LogOut
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
@@ -30,75 +34,36 @@ interface NavItem {
   badge?: string;
 }
 
-const mainNav: NavItem[] = [
+const primaryNav: NavItem[] = [
   { label: "Dashboard", href: "/dashboard", icon: <LayoutDashboard className="h-4 w-4" /> },
-  { label: "Projects", href: "/projects", icon: <FolderOpen className="h-4 w-4" /> },
+  { label: "Projects", href: "/projects", icon: <FolderOpen className="h-4 w-4" />, badge: "3" },
+  { label: "Templates", href: "/schema", icon: <LayoutTemplate className="h-4 w-4" /> },
+  { label: "Activity", href: "/dashboard#activity", icon: <Activity className="h-4 w-4" /> },
 ];
 
 const settingsNav: NavItem[] = [
   { label: "Profile", href: "/settings/profile", icon: <User className="h-4 w-4" /> },
   { label: "Security", href: "/settings/security", icon: <Shield className="h-4 w-4" /> },
   { label: "API Keys", href: "/settings/api-keys", icon: <Key className="h-4 w-4" /> },
-  { label: "Billing", href: "/settings/billing", icon: <CreditCard className="h-4 w-4" /> },
+  { label: "Billing", href: "/settings/profile", icon: <CreditCard className="h-4 w-4" /> },
 ];
-
-function SidebarLogo({ collapsed }: { collapsed: boolean }) {
-  return (
-    <Link href="/dashboard" className="flex items-center gap-2 px-3 py-2 rounded-lg hover:bg-[#2c2a28] transition-colors" aria-label="Relix dashboard">
-      <div className="w-7 h-7 rounded-md bg-[#6366f1] flex items-center justify-center shrink-0">
-        <svg width="16" height="16" viewBox="0 0 18 18" fill="none" aria-hidden="true">
-          <path d="M4 3h6a4 4 0 0 1 4 4 4 4 0 0 1-2.5 3.7L14.5 15H11l-2.5-4H7v4H4V3zm3 2v4h3a2 2 0 0 0 0-4H7z" fill="white" />
-        </svg>
-      </div>
-      {!collapsed && (
-        <span className="font-semibold text-white tracking-tight">Relix</span>
-      )}
-    </Link>
-  );
-}
-
-function NavLink({ item, collapsed }: { item: NavItem; collapsed: boolean }) {
-  const pathname = usePathname();
-  const active = pathname === item.href || pathname.startsWith(item.href + "/");
-  return (
-    <Link
-      href={item.href}
-      title={collapsed ? item.label : undefined}
-      className={cn(
-        "flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-all duration-150",
-        "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-400",
-        active
-          ? "bg-[#6366f1]/15 text-white"
-          : "text-white/50 hover:text-white hover:bg-white/5"
-      )}
-      aria-current={active ? "page" : undefined}
-    >
-      <span className="shrink-0" aria-hidden="true">{item.icon}</span>
-      {!collapsed && <span>{item.label}</span>}
-      {!collapsed && item.badge && (
-        <span className="ml-auto text-xs bg-[#6366f1]/20 text-indigo-300 px-1.5 py-0.5 rounded-full">
-          {item.badge}
-        </span>
-      )}
-    </Link>
-  );
-}
 
 export function Sidebar() {
   const router = useRouter();
-  const [collapsed, setCollapsed] = useState(false);
+  const pathname = usePathname();
   const [darkMode, setDarkMode] = useState(false);
   const [cmdOpen, setCmdOpen] = useState(false);
-  const [userName, setUserName] = useState("Alice Chen");
-  const [userEmail, setUserEmail] = useState("alice@example.com");
+  const [workspaceOpen, setWorkspaceOpen] = useState(false);
+  const [currentWorkspace, setCurrentWorkspace] = useState("Acme Corp");
+  const [userName, setUserName] = useState("Alice");
+  const [userEmail, setUserEmail] = useState("alice@acme.com");
 
   useEffect(() => {
     try {
       const storedEmail = localStorage.getItem("relix_user_email");
       const storedName = localStorage.getItem("relix_user_name");
       if (storedEmail) setUserEmail(storedEmail);
-      if (storedName) setUserName(storedName);
-      else if (storedEmail) setUserName(storedEmail.split("@")[0]);
+      if (storedName) setUserName(storedName.split(" ")[0]);
     } catch {}
 
     const handler = (e: KeyboardEvent) => {
@@ -111,131 +76,203 @@ export function Sidebar() {
     return () => window.removeEventListener("keydown", handler);
   }, []);
 
-  const handleSignOut = async () => {
+  const handleSignOut = async (e?: React.MouseEvent) => {
+    if (e) e.preventDefault();
     try {
       await fetch("/api/auth/logout", { method: "POST" });
       localStorage.removeItem("relix_logged_in");
+      localStorage.removeItem("relix_user_email");
+      localStorage.removeItem("relix_user_name");
+      localStorage.removeItem("relix_user_plan");
     } catch {}
     router.push("/login");
   };
 
   return (
     <>
-    <CommandPalette open={cmdOpen} onClose={() => setCmdOpen(false)} />
-    <aside
-      className={cn(
-        "hidden md:flex flex-col h-full bg-[#1c1a18] border-r border-white/5 transition-all duration-300",
-        collapsed ? "w-16" : "w-60"
-      )}
-      aria-label="Sidebar navigation"
-    >
-      {/* Logo */}
-      <div className="flex items-center justify-between px-3 h-14 border-b border-white/5 shrink-0">
-        <SidebarLogo collapsed={collapsed} />
-        <button
-          onClick={() => setCollapsed((c) => !c)}
-          aria-label={collapsed ? "Expand sidebar" : "Collapse sidebar"}
-          className="w-7 h-7 rounded-md flex items-center justify-center text-white/30 hover:text-white hover:bg-white/5 transition-colors"
-        >
-          {collapsed ? <ChevronRight className="h-4 w-4" /> : <ChevronLeft className="h-4 w-4" />}
-        </button>
-      </div>
+      <CommandPalette open={cmdOpen} onClose={() => setCmdOpen(false)} />
 
-      {/* Workspace switcher */}
-      {!collapsed && (
-        <div className="px-3 pt-3">
-          <button className="w-full flex items-center gap-2 px-2.5 py-2 rounded-lg border border-white/10 text-white/60 hover:border-white/20 hover:text-white transition-colors text-sm">
-            <div className="w-5 h-5 rounded bg-[#4a7c59] flex items-center justify-center text-[10px] font-bold text-white">A</div>
-            {!collapsed && <span className="flex-1 text-left truncate text-xs">Acme Corp</span>}
-            <ChevronRight className="h-3 w-3 ml-auto opacity-50" />
-          </button>
-        </div>
-      )}
+      <aside
+        className="w-64 bg-[#FBF8EF] border-r border-[#EAE3D2] flex flex-col justify-between p-4 select-none shrink-0 font-sohne min-h-screen sticky top-0"
+        aria-label="Application Sidebar"
+      >
+        {/* ── Top Section ──────────────────────────────────────────────── */}
+        <div className="space-y-4">
+          {/* Logo */}
+          <div className="px-2 py-1 flex items-center gap-2">
+            <RelixLogo className="w-5 h-5 text-[#1B1C15]" color="currentColor" />
+            <span className="font-meraki text-xl font-medium tracking-tight text-[#1B1C15]">
+              Relix
+            </span>
+          </div>
 
-      {/* Main nav */}
-      <nav className="flex-1 overflow-y-auto px-3 py-3 flex flex-col gap-0.5">
-        {/* Command shortcut */}
-        {!collapsed && (
+          {/* Workspace Selector */}
+          <div className="relative">
+            <button
+              onClick={() => setWorkspaceOpen(!workspaceOpen)}
+              className="w-full flex items-center justify-between px-3 py-2 rounded-xl bg-white border border-[#EAE3D2] text-xs font-semibold text-[#1B1C15] hover:border-[#1B1C15]/40 transition-colors shadow-2xs cursor-pointer"
+            >
+              <div className="flex items-center gap-2 min-w-0">
+                <div className="w-5 h-5 rounded-md bg-[#4F46E5]/10 text-[#4F46E5] flex items-center justify-center shrink-0">
+                  <Building2 className="h-3 w-3" />
+                </div>
+                <span className="truncate">{currentWorkspace}</span>
+              </div>
+              <ChevronDown className="h-3.5 w-3.5 text-[#828579]" />
+            </button>
+
+            {workspaceOpen && (
+              <div className="absolute top-full left-0 right-0 mt-1 bg-white border border-[#EAE3D2] rounded-xl shadow-lg p-1 z-30 space-y-0.5 text-xs">
+                {["Acme Corp", "Vortex Labs", "Personal Sandbox"].map((ws) => (
+                  <button
+                    key={ws}
+                    onClick={() => {
+                      setCurrentWorkspace(ws);
+                      setWorkspaceOpen(false);
+                    }}
+                    className="w-full flex items-center justify-between px-2.5 py-1.5 rounded-lg text-left hover:bg-[#FAF7EE] text-[#1B1C15] cursor-pointer"
+                  >
+                    <span>{ws}</span>
+                    {currentWorkspace === ws && <Check className="h-3 w-3 text-[#4F46E5]" />}
+                  </button>
+                ))}
+              </div>
+            )}
+          </div>
+
+          {/* Quick Command Search Bar */}
           <button
             onClick={() => setCmdOpen(true)}
-            className="flex items-center gap-2 w-full px-3 py-2 rounded-lg text-sm text-white/30 hover:text-white/60 hover:bg-white/5 transition-colors mb-2 border border-white/5"
-            aria-label="Open command palette"
-            title="⌘K"
+            className="w-full flex items-center justify-between px-3 py-2 rounded-xl bg-white border border-[#EAE3D2] text-xs text-[#828579] hover:text-[#1B1C15] hover:border-[#1B1C15]/40 transition-colors shadow-2xs cursor-pointer"
           >
-            <Command className="h-4 w-4" aria-hidden="true" />
-            <span className="flex-1 text-left">Search…</span>
-            <kbd className="text-[0.65rem] px-1.5 py-0.5 rounded border border-white/10 bg-white/5">⌘K</kbd>
+            <div className="flex items-center gap-2">
+              <Search className="h-3.5 w-3.5" />
+              <span>Quick command</span>
+            </div>
+            <kbd className="px-1.5 py-0.5 rounded bg-[#FAF7EE] border border-[#EAE3D2] font-mono text-[0.65rem] text-[#5E6156]">
+              ⌘K
+            </kbd>
           </button>
-        )}
 
-        {mainNav.map((item) => (
-          <NavLink key={item.href} item={item} collapsed={collapsed} />
-        ))}
+          {/* Primary Navigation */}
+          <nav className="space-y-1 pt-1">
+            {primaryNav.map((item) => {
+              const active = pathname === item.href || (item.href === "/dashboard" && pathname === "/dashboard");
+              return (
+                <Link
+                  key={item.label}
+                  href={item.href}
+                  className={cn(
+                    "relative flex items-center gap-2.5 px-3 py-2 rounded-xl text-xs font-medium transition-all",
+                    active
+                      ? "bg-[#4F46E5]/10 text-[#4F46E5] font-semibold border border-[#4F46E5]/20 shadow-xs"
+                      : "text-[#5E6156] hover:text-[#1B1C15] hover:bg-black/5"
+                  )}
+                >
+                  {active && (
+                    <span className="absolute left-0 top-1.5 bottom-1.5 w-1 rounded-r-full bg-[#4F46E5]" />
+                  )}
+                  <span className={active ? "text-[#4F46E5]" : "text-[#828579]"}>
+                    {item.icon}
+                  </span>
+                  <span>{item.label}</span>
+                  {item.badge && (
+                    <span className="ml-auto px-1.5 py-0.2 rounded-full bg-[#FAF7EE] text-[#5E6156] text-[0.65rem] font-mono border border-[#EAE3D2]">
+                      {item.badge}
+                    </span>
+                  )}
+                </Link>
+              );
+            })}
+          </nav>
 
-        {/* Separator */}
-        {!collapsed && (
-          <p className="text-[0.65rem] font-semibold uppercase tracking-widest text-white/20 px-3 mt-4 mb-2">
-            Settings
-          </p>
-        )}
-        {collapsed && <div className="h-px bg-white/5 my-2" />}
-
-        {settingsNav.map((item) => (
-          <NavLink key={item.href} item={item} collapsed={collapsed} />
-        ))}
-      </nav>
-
-      {/* Bottom section */}
-      <div className="px-3 pb-3 border-t border-white/5 pt-3 flex flex-col gap-1">
-        {/* Usage indicator */}
-        {!collapsed && (
-          <div className="px-3 py-3 rounded-lg bg-white/5 mb-2">
-            <div className="flex items-center justify-between text-xs text-white/40 mb-1.5">
-              <span>Generations this month</span>
-              <span>3 / 10</span>
+          {/* Settings Navigation Group */}
+          <div className="pt-2">
+            <p className="text-[0.65rem] font-bold text-[#828579] tracking-wider uppercase font-mono px-3 mb-1.5">
+              Settings
+            </p>
+            <div className="space-y-0.5">
+              {settingsNav.map((item) => (
+                <Link
+                  key={item.label}
+                  href={item.href}
+                  className="flex items-center gap-2.5 px-3 py-1.5 rounded-xl text-xs font-medium text-[#5E6156] hover:text-[#1B1C15] hover:bg-black/5 transition-colors"
+                >
+                  <span className="text-[#828579]">{item.icon}</span>
+                  <span>{item.label}</span>
+                </Link>
+              ))}
             </div>
-            <div className="h-1.5 rounded-full bg-white/10 overflow-hidden">
-              <div className="h-full w-[30%] rounded-full bg-[#6366f1]" />
-            </div>
-            <Link href="/settings/billing" className="text-[0.7rem] text-indigo-400 hover:text-indigo-300 mt-1.5 block">
-              Upgrade to Pro →
+          </div>
+        </div>
+
+        {/* ── Bottom Section: Docs, Theme, User Profile ───────────────────── */}
+        <div className="pt-4 border-t border-[#EAE3D2] space-y-3">
+          {/* Docs & Theme Switcher */}
+          <div className="flex items-center justify-between px-1">
+            <Link
+              href="/docs"
+              className="flex items-center gap-2 text-xs font-medium text-[#5E6156] hover:text-[#1B1C15] transition-colors"
+            >
+              <BookOpen className="h-3.5 w-3.5 text-[#828579]" />
+              <span>Docs</span>
             </Link>
-          </div>
-        )}
 
-        {/* Docs */}
-        <NavLink item={{ label: "Docs", href: "/docs", icon: <BookOpen className="h-4 w-4" /> }} collapsed={collapsed} />
-
-        {/* Theme toggle */}
-        <button
-          onClick={() => setDarkMode((d) => !d)}
-          title={collapsed ? "Toggle theme" : undefined}
-          aria-label={darkMode ? "Switch to light mode" : "Switch to dark mode"}
-          className="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm text-white/50 hover:text-white hover:bg-white/5 transition-colors"
-        >
-          {darkMode ? <Sun className="h-4 w-4 shrink-0" /> : <Moon className="h-4 w-4 shrink-0" />}
-          {!collapsed && <span>{darkMode ? "Light mode" : "Dark mode"}</span>}
-        </button>
-
-        {/* User menu */}
-        <button
-          onClick={handleSignOut}
-          title="Click to sign out"
-          className="w-full flex items-center gap-2.5 px-3 py-2.5 rounded-lg hover:bg-white/10 transition-colors cursor-pointer text-left group"
-        >
-          <div className="w-7 h-7 rounded-full bg-[#00674F] flex items-center justify-center text-xs font-bold text-white shrink-0 uppercase shadow-xs">
-            {userName ? userName.charAt(0) : "U"}
-          </div>
-          {!collapsed && (
-            <div className="flex-1 min-w-0">
-              <p className="text-xs font-medium text-white truncate group-hover:text-[#C5F74F] transition-colors">{userName}</p>
-              <p className="text-[0.65rem] text-white/40 truncate">{userEmail}</p>
+            {/* Compact Theme Switcher */}
+            <div className="flex items-center p-0.5 rounded-full bg-[#EAE3D2]/70 border border-[#EAE3D2]">
+              <button
+                onClick={() => setDarkMode(false)}
+                className={cn(
+                  "p-1 rounded-full text-xs transition-colors cursor-pointer",
+                  !darkMode ? "bg-white text-[#1B1C15] shadow-2xs" : "text-[#828579]"
+                )}
+                title="Light mode"
+              >
+                <Sun className="h-3 w-3" />
+              </button>
+              <button
+                onClick={() => setDarkMode(true)}
+                className={cn(
+                  "p-1 rounded-full text-xs transition-colors cursor-pointer",
+                  darkMode ? "bg-[#1B1C15] text-white shadow-2xs" : "text-[#828579]"
+                )}
+                title="Dark mode"
+              >
+                <Moon className="h-3 w-3" />
+              </button>
             </div>
-          )}
-          {!collapsed && <LogOut className="h-4 w-4 text-white/30 group-hover:text-white shrink-0 transition-colors" />}
-        </button>
-      </div>
-    </aside>
+          </div>
+
+          {/* User Profile Card & Sign out */}
+          <div className="flex items-center justify-between p-1.5 rounded-xl hover:bg-black/5 transition-colors group">
+            <Link
+              href="/settings/profile"
+              className="flex items-center gap-2.5 min-w-0 flex-1 cursor-pointer"
+            >
+              <div className="w-7 h-7 rounded-full bg-[#00674F] text-white flex items-center justify-center text-xs font-bold shrink-0 uppercase shadow-2xs">
+                {userName ? userName.charAt(0) : "A"}
+              </div>
+              <div className="min-w-0 flex-1">
+                <p className="text-xs font-semibold text-[#1B1C15] leading-tight truncate group-hover:text-[#00674F] transition-colors">
+                  {userName || "Alice"}
+                </p>
+                <p className="text-[0.65rem] text-[#828579] truncate">
+                  {userEmail || currentWorkspace}
+                </p>
+              </div>
+            </Link>
+
+            <button
+              onClick={handleSignOut}
+              title="Sign out of Relix"
+              className="p-1.5 rounded-lg text-[#828579] hover:text-red-600 hover:bg-red-50 transition-colors cursor-pointer shrink-0 ml-1"
+              aria-label="Sign out"
+            >
+              <LogOut className="h-4 w-4" />
+            </button>
+          </div>
+        </div>
+      </aside>
     </>
   );
 }

@@ -223,9 +223,6 @@ export default function DocsPage() {
         <Link href="/projects/p1/schema" className="hover:underline flex items-center gap-1">
           <Database className="h-3.5 w-3.5" /> Open schema editor
         </Link>
-        <Link href="/settings/billing" className="hover:underline flex items-center gap-1">
-          <ArrowRight className="h-3.5 w-3.5" /> Upgrade plan
-        </Link>
       </div>
     </div>
   );

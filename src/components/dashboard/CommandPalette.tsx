@@ -93,15 +93,6 @@ export function CommandPalette({ open, onClose }: CommandPaletteProps) {
       keywords: ["token", "secret"],
     },
     {
-      id: "nav-billing",
-      label: "Billing",
-      description: "Manage your plan",
-      icon: <CreditCard className="h-4 w-4" />,
-      group: "Navigate",
-      action: () => navigate("/settings/billing"),
-      keywords: ["plan", "subscription", "upgrade"],
-    },
-    {
       id: "nav-docs",
       label: "Documentation",
       icon: <BookOpen className="h-4 w-4" />,

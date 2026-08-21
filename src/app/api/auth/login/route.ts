@@ -13,7 +13,14 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    const user = await authenticateUser(email, typeof password === "string" ? password : undefined);
+    if (!password || typeof password !== "string") {
+      return NextResponse.json(
+        { error: "Password is required to log in." },
+        { status: 400 }
+      );
+    }
+
+    const user = await authenticateUser(email, password);
 
     const response = NextResponse.json({
       success: true,

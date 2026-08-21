@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { findUserByEmail } from "@/lib/auth";
+import { findUserById } from "@/lib/auth";
 
 export async function GET(req: NextRequest) {
   const sessionCookie = req.cookies.get("relix_session")?.value;
@@ -8,13 +8,21 @@ export async function GET(req: NextRequest) {
     return NextResponse.json({ authenticated: false, user: null });
   }
 
+  const user = await findUserById(sessionCookie);
+
+  if (!user) {
+    return NextResponse.json({ authenticated: false, user: null });
+  }
+
   return NextResponse.json({
     authenticated: true,
     user: {
-      id: sessionCookie,
-      email: "developer@relix.dev",
-      name: "Developer",
-      plan: "free",
+      id: user.id,
+      email: user.email,
+      name: user.name,
+      plan: user.plan,
+      avatarUrl: user.avatarUrl,
+      createdAt: user.createdAt,
     },
   });
 }

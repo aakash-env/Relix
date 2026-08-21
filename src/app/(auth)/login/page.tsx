@@ -1,9 +1,9 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect, Suspense } from "react";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
-import { Eye, EyeOff, ArrowRight, Loader2 } from "lucide-react";
+import { useRouter, useSearchParams } from "next/navigation";
+import { Eye, EyeOff, ArrowRight, Loader2, CheckCircle2 } from "lucide-react";
 
 function GoogleIcon({ className }: { className?: string }) {
   return (
@@ -36,13 +36,29 @@ function AppleIcon({ className }: { className?: string }) {
   );
 }
 
-export default function LoginPage() {
+function LoginFormContent() {
   const router = useRouter();
+  const searchParams = useSearchParams();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
+  const [justRegistered, setJustRegistered] = useState(false);
+
+  useEffect(() => {
+    const isRegistered = searchParams.get("registered") === "true";
+    const emailParam = searchParams.get("email");
+    if (isRegistered) {
+      setJustRegistered(true);
+    }
+    if (emailParam) {
+      setEmail(emailParam);
+    } else {
+      const stored = localStorage.getItem("relix_user_email");
+      if (stored) setEmail(stored);
+    }
+  }, [searchParams]);
 
   const performLogin = async (userEmail: string, userPassword?: string) => {
     setErrorMsg(null);
@@ -90,6 +106,11 @@ export default function LoginPage() {
       return;
     }
 
+    if (!password) {
+      setErrorMsg("Please enter your password.");
+      return;
+    }
+
     performLogin(trimmed, password);
   };
 
@@ -108,6 +129,14 @@ export default function LoginPage() {
         </p>
       </div>
 
+      {/* Success alert after registration */}
+      {justRegistered && !errorMsg && (
+        <div role="status" className="bg-[#E6F4EF] border border-[#00674F]/25 rounded-xl px-4 py-3 mb-4 text-xs text-[#00674F] font-medium flex items-center gap-2.5 animate-in fade-in duration-200">
+          <CheckCircle2 className="h-4 w-4 shrink-0 text-[#00674F]" />
+          <span>Account created successfully! Please enter your password to sign in.</span>
+        </div>
+      )}
+
       {/* Form error alert */}
       {errorMsg && (
         <div role="alert" className="bg-red-50 border border-red-200 rounded-xl px-4 py-3 mb-4 text-xs text-red-700 font-medium animate-in fade-in duration-200">
@@ -125,7 +154,7 @@ export default function LoginPage() {
           <input
             id="login-email"
             type="email"
-            autoFocus
+            autoFocus={!email}
             autoComplete="email"
             placeholder="you@company.com"
             value={email}
@@ -154,6 +183,7 @@ export default function LoginPage() {
             <input
               id="login-password"
               type={showPassword ? "text" : "password"}
+              autoFocus={!!email}
               autoComplete="current-password"
               placeholder="Enter your password"
               value={password}
@@ -241,5 +271,13 @@ export default function LoginPage() {
         <Link href="/privacy" className="underline hover:text-[#1B1C15]">Privacy Policy</Link>.
       </p>
     </div>
+  );
+}
+
+export default function LoginPage() {
+  return (
+    <Suspense fallback={<div className="w-full max-w-[460px] mx-auto py-12 text-center text-xs text-[#828579]">Loading...</div>}>
+      <LoginFormContent />
+    </Suspense>
   );
 }

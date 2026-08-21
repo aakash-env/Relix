@@ -121,21 +121,6 @@ export function FeatureStorySection() {
               Connect your PostgreSQL schema once. Relix synthesizes relational test records across all your tables, ORMs, and databases in milliseconds.
             </p>
 
-            <div className="flex flex-col gap-2.5 mb-8 font-sohne text-xs text-[#5E6156]">
-              <div className="flex items-center gap-2">
-                <CheckCircle2 className="h-4 w-4 text-[#00674F] shrink-0" />
-                <span>Zero circular loops &amp; 100% DAG topological resolution</span>
-              </div>
-              <div className="flex items-center gap-2">
-                <CheckCircle2 className="h-4 w-4 text-[#00674F] shrink-0" />
-                <span>Automatic foreign key pool &amp; parent-first insertion</span>
-              </div>
-              <div className="flex items-center gap-2">
-                <CheckCircle2 className="h-4 w-4 text-[#00674F] shrink-0" />
-                <span>Instant export to TypeScript, Drizzle, Prisma &amp; SQL</span>
-              </div>
-            </div>
-
             {/* Pill Button: Learn More */}
             <Link
               href="/docs"

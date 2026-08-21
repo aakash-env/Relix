@@ -16,7 +16,7 @@ const newsreader = Newsreader({
 
 const plusJakartaSans = Plus_Jakarta_Sans({
   subsets: ["latin"],
-  variable: "--font-sohne",
+  variable: "--font-sans-fallback",
   display: "swap",
 });
 
