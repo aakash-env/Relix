@@ -24,8 +24,6 @@ function getDemoData(): GeneratedTable[] {
   return result.tables;
 }
 
-const DEMO_TABLES = getDemoData();
-
 function truncate(v: unknown, maxLen = 32): string {
   if (v === null || v === undefined) return "null";
   const s = String(v);
@@ -33,10 +31,11 @@ function truncate(v: unknown, maxLen = 32): string {
 }
 
 export default function PreviewPage() {
-  const [activeTable, setActiveTable] = useState(DEMO_TABLES[0]?.tableName ?? "");
+  const demoTables = useMemo(() => getDemoData(), []);
+  const [activeTable, setActiveTable] = useState("users");
   const [search, setSearch] = useState("");
 
-  const currentTable = DEMO_TABLES.find((t) => t.tableName === activeTable);
+  const currentTable = demoTables.find((t) => t.tableName === activeTable) || demoTables[0];
 
   const filteredRows = useMemo(() => {
     if (!currentTable) return [];
@@ -108,7 +107,7 @@ export default function PreviewPage() {
             Tables
           </div>
           <ul>
-            {DEMO_TABLES.map((table) => (
+            {demoTables.map((table) => (
               <li key={table.tableName}>
                 <button
                   onClick={() => { setActiveTable(table.tableName); setSearch(""); }}

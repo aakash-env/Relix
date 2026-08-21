@@ -20,7 +20,7 @@ CREATE TABLE users (
   created_at TIMESTAMPTZ DEFAULT NOW()
 );`;
 
-export default function SchemaPage({ params }: { params: Promise<{ id: string }> }) {
+export default function SchemaPage() {
   const [schemaText, setSchemaText] = useState(PLACEHOLDER_SQL);
   const [parsed, setParsed] = useState<ParsedSchema | null>(null);
   const [parsing, setParsing] = useState(false);

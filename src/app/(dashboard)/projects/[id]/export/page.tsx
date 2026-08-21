@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useMemo } from "react";
 import Link from "next/link";
 import { Copy, Check, Download } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -33,8 +33,8 @@ export default function ExportPage() {
   const [format, setFormat] = useState<ExportFormat>("typescript-drizzle");
   const [copied, setCopied] = useState(false);
 
-  const content = generateExportContent(format);
-  const currentFormat = FORMATS.find((f) => f.id === format)!;
+  const content = useMemo(() => generateExportContent(format), [format]);
+  const currentFormat = FORMATS.find((f) => f.id === format) || FORMATS[0];
 
   const handleCopy = async () => {
     await navigator.clipboard.writeText(content);
